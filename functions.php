@@ -65,7 +65,7 @@ function miss_send_mail($id, $username, $email)
 	$mail = str_replace('<board_title>', $forum_config['o_board_title'], $mail);
 	$mail = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail);
 	
-	//forum_mail($email, $sub, $mail);
+	forum_mail($email, $sub, $mail);
 	miss_update_last_sent($id);
 	/*echo "<pre>";
 	echo "$mail";
@@ -86,6 +86,39 @@ function miss_update_last_sent($id)
 
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
+
+function miss_update_last_script_exec()
+{
+	global $forum_db, $db_prefix;
+
+	$query = array(
+		'UPDATE'	=> 'config',
+		'SET'		=> 'conf_value=\''.time().'\'',
+		'WHERE'		=>	'conf_name=\'o_miss_last_sent\''
+	);
+	print_r($query);
+
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
+
+function miss_get_last_script_exec()
+{
+	global $forum_db, $db_prefix;
+
+	$query = array(
+		'SELECT'	=> 'conf_value',
+		'FROM'		=> 'config',
+		'WHERE'		=>	'conf_name=\'o_miss_last_sent\''
+	);
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$result = $forum_db->fetch_assoc($result);
+
+	$last_exec = (int) $result['conf_value'];
+	
+	return $last_exec;
+}
+
 function miss_get_duration()
 {
 	global $forum_config;

@@ -1,0 +1,6 @@
+====== Version 0.2 ==========
+
+* added plugin "active / inactive" feature, defult mode is set to "inactive"
+* added plugin execution duration configuraton, it was executing in every page load on the previous version
+
+====== Version 0.1 ==========

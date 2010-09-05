@@ -26,7 +26,7 @@
 <extension engine="1.0">
 	<id>we_miss_you</id>
 	<title>We Miss You</title>
-	<version>0.1</version>
+	<version>0.2</version>
 	<description>Send miss you E-mail to the inactive users</description>
 	<author>Tareq</author>
 
@@ -53,15 +53,18 @@ back to papa, we miss you
 			'INTO'		=> 'config',
 			'VALUES'	=> array(
 				"'o_miss_mail','2'",
-				"'o_miss_duration','30'",
+				"'o_miss_duration','90'",
 				"'o_miss_have_post','yes'",
 				"'o_miss_mail_sub','We Miss You!!!'",
 				"'o_miss_mail_message','$mail'",
 				"'o_miss_status', '0'",
-				"'o_miss_last_sent', '0'"
+				"'o_miss_last_sent', '0'",
+				"'o_miss_exec_duration', '10'"
 			)
 		);
 
+		var_dump($query);
+		//die();
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	]]></install>
@@ -76,7 +79,7 @@ back to papa, we miss you
 		// Delete extension options from config
 		$query = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> "conf_name in ('o_miss_mail','o_miss_duration','o_miss_have_post','o_miss_mail_message', 'o_miss_mail_sub')");
+			'WHERE'		=> "conf_name in ('o_miss_mail','o_miss_duration','o_miss_have_post','o_miss_mail_message', 'o_miss_mail_sub', 'o_miss_status', 'o_miss_last_sent', 'o_miss_exec_duration' )");
 
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
@@ -91,8 +94,41 @@ back to papa, we miss you
 			if (!defined('FORUM_EMAIL_FUNCTIONS_LOADED'))
 				require FORUM_ROOT.'include/email.php';
 
-			miss_get_users();
+			$active = (int) $forum_config['o_miss_status'];
+			$last_sent = miss_get_last_script_exec();
+			$duration = (int) $forum_config['o_miss_exec_duration'];
+			$now = time();
+			$diff = $now - $last_sent;
 
+			//printf("%d = %d - %d <br>", $diff, $now, $last_sent);
+
+			//var_dump($active, $last_sent, $duration, $now, $diff);
+			
+			//if the plugin is active
+			if( $active )
+			{
+				//var_dump($diff, $duration*60);
+				if( $diff > $duration*60)
+				{
+					//echo "নোটিফিকেশন পাঠানো হয়েছে<br>";
+					//miss_get_users();
+					miss_update_last_script_exec();
+					miss_get_last_script_exec();
+				}
+
+				//echo "নোটিফিকেশন পাঠানোর অপেক্ষায় আছি<br>";
+			}
+			else
+			{
+				//echo 'plugin inactive';
+			}
+
+		]]></hook>
+
+		<hook id="aop_features_validation"><![CDATA[
+		
+			$form['miss_status'] = isset($form['miss_status']) ? 1 : 0;
+			
 		]]></hook>
 
 		<hook id="aop_features_sig_fieldset_end"><![CDATA[
@@ -107,12 +143,33 @@ back to papa, we miss you
 
 			<fieldset class="frm-group group1">
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+
+					<div class="sf-box text">
+						<span class="fld-input">
+							<input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[miss_status]" value="1" <?php if ($forum_config['o_miss_status'] == '1') echo 'checked="checked"' ?> />
+						</span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>">
+							<span>Plugin status (active/inactive)</span>
+						</label>
+					</div>
+
+					<div class="sf-box text">
+						<span class="fld-input">
+							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" value="<?php echo $forum_config['o_miss_exec_duration']; ?>" maxlength="50" size="30" name="form[miss_exec_duration]"/><br />
+						</span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>">
+							<span>Execute script every ? minute</span>
+							<small>The script will execute after selected minute duration</small>
+						</label>
+					</div>
+					
 					<div class="sf-box text">
 						<span class="fld-input">
 							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" value="<?php echo $forum_config['o_miss_mail']; ?>" maxlength="50" size="30" name="form[miss_mail]"/><br />
 						</span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>">
-							<span>Mails per execution (once at a time)</span>
+							<span>Mails per execution</span>
+							<small>The number of mail will be sent to the user's in one script execution</small>
 						</label>
 					</div>
 
@@ -121,9 +178,10 @@ back to papa, we miss you
 							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" value="<?php echo $forum_config['o_miss_duration']; ?>" maxlength="50" size="30" name="form[miss_duration]"/><br />
 						</span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>">
-							<span>Visit Duration (in days)</span>
+							<span>Inactive Duration (in days)</span>
+							<small>Inactive duration of the user (in days)</small>
 						</label>
-					</div>
+					</div>					
 
 					<div class="sf-box text">
 						<span class="fld-input">
