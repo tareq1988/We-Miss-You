@@ -34,7 +34,7 @@
 	<maxtestedon>1.3.2</maxtestedon>
 
 	<install><![CDATA[
-	
+
 		if (!$forum_db->field_exists('users', 'last_miss_send'))
 		{
 			$forum_db->add_field('users', 'last_miss_send', 'INT(10) UNSIGNED', false, '0');
@@ -47,7 +47,7 @@ back to papa, we miss you
 =================================
 <board_mailer>
 (Do not reply to this message)";
-				
+
 		$query = array(
 			'INSERT'	=> 'conf_name, conf_value',
 			'INTO'		=> 'config',
@@ -56,16 +56,18 @@ back to papa, we miss you
 				"'o_miss_duration','30'",
 				"'o_miss_have_post','yes'",
 				"'o_miss_mail_sub','We Miss You!!!'",
-				"'o_miss_mail_message','$mail'"
+				"'o_miss_mail_message','$mail'",
+				"'o_miss_status', '0'",
+				"'o_miss_last_sent', '0'"
 			)
 		);
-		
+
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-		
+
 	]]></install>
 
 	<uninstall><![CDATA[
-	
+
 		if ($forum_db->field_exists('users', 'last_miss_send'))
 		{
 			$forum_db->drop_field('users', 'last_miss_send');
@@ -77,24 +79,24 @@ back to papa, we miss you
 			'WHERE'		=> "conf_name in ('o_miss_mail','o_miss_duration','o_miss_have_post','o_miss_mail_message', 'o_miss_mail_sub')");
 
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-		
+
 	]]></uninstall>
-	
+
 	<hooks>
-	
+
 		<hook id="hd_head"><![CDATA[
-		
+
 			require_once $ext_info['path'].'/functions.php';
-			
+
 			if (!defined('FORUM_EMAIL_FUNCTIONS_LOADED'))
 				require FORUM_ROOT.'include/email.php';
-				
+
 			miss_get_users();
-		
+
 		]]></hook>
-		
+
 		<hook id="aop_features_sig_fieldset_end"><![CDATA[
-			
+
 			require_once $ext_info['path'].'/functions.php';
 		?>
 			<div class="content-head">
@@ -157,11 +159,11 @@ back to papa, we miss you
 						</div>
 						 <small>you may use: &lt;board_mailer&gt;, &lt;board_title&gt;, &lt;username&gt;</small>
 					</div>
-					
+
 				</div>
 			</fieldset>
-		<?php	
-		]]></hook>		
-		
+		<?php
+		]]></hook>
+
 	</hooks>
 </extension>
