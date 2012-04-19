@@ -31,15 +31,12 @@ function miss_get_users()
 	else if($have_post == 'both')
 		$query['WHERE'] .= '';
 
-	//print_r($query);
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	//$user_number = $forum_db->num_rows($result);
 
-	//var_dump($forum_db->fetch_assoc($result), $day);
 	while($row = $forum_db->fetch_assoc($result))
 	{
-		//var_dump($row['username']);
 		miss_send_mail($row['id'], $row['username'], $row['email']);
 	}
 
@@ -58,8 +55,6 @@ function miss_send_mail($id, $username, $email)
 
 	$mail	= $forum_config['o_miss_mail_message'];
 	$sub	= $forum_config['o_miss_mail_sub'];
-	//send mail
-	//echo "$id: $username ->mail sent  <br>";
 
 	$mail = str_replace('<username>', $username, $mail);
 	$mail = str_replace('<board_title>', $forum_config['o_board_title'], $mail);
@@ -67,10 +62,6 @@ function miss_send_mail($id, $username, $email)
 	
 	forum_mail($email, $sub, $mail);
 	miss_update_last_sent($id);
-	/*echo "<pre>";
-	echo "$mail";
-	echo "</pre>";
-	die();*/
 }
 
 function miss_update_last_sent($id)
@@ -82,7 +73,6 @@ function miss_update_last_sent($id)
 		'SET'		=> 'u.last_miss_send=\''.time().'\'',
 		'WHERE'		=> 'u.id=\''.$id.'\''
 	);
-	//print_r($query);
 
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
@@ -96,7 +86,6 @@ function miss_update_last_script_exec()
 		'SET'		=> 'conf_value=\''.time().'\'',
 		'WHERE'		=>	'conf_name=\'o_miss_last_sent\''
 	);
-	print_r($query);
 
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }

@@ -62,9 +62,6 @@ back to papa, we miss you
 				"'o_miss_exec_duration', '10'"
 			)
 		);
-
-		var_dump($query);
-		//die();
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	]]></install>
@@ -99,24 +96,16 @@ back to papa, we miss you
 			$duration = (int) $forum_config['o_miss_exec_duration'];
 			$now = time();
 			$diff = $now - $last_sent;
-
-			//printf("%d = %d - %d <br>", $diff, $now, $last_sent);
-
-			//var_dump($active, $last_sent, $duration, $now, $diff);
 			
 			//if the plugin is active
 			if( $active )
 			{
-				//var_dump($diff, $duration*60);
 				if( $diff > $duration*60)
 				{
-					//echo "নোটিফিকেশন পাঠানো হয়েছে<br>";
-					//miss_get_users();
+					miss_get_users();
 					miss_update_last_script_exec();
 					miss_get_last_script_exec();
 				}
-
-				//echo "নোটিফিকেশন পাঠানোর অপেক্ষায় আছি<br>";
 			}
 			else
 			{
